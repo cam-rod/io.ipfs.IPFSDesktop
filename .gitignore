@@ -1,0 +1,8 @@
+# JetBrains
+.idea/
+*.iml
+
+# Flatpak builder
+.flatpak-builder/
+build/
+repo/

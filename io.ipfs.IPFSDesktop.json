@@ -1,0 +1,86 @@
+{
+  "$schema": "https://raw.githubusercontent.com/flatpak/flatpak-builder/main/data/flatpak-manifest.schema.json",
+  "app-id": "io.ipfs.IPFSDesktop",
+  "base": "org.electronjs.Electron2.BaseApp",
+  "base-version": "22.08",
+  "runtime": "org.freedesktop.Platform",
+  "runtime-version": "22.08",
+  "sdk": "org.freedesktop.Sdk",
+  "command": "ipfs-desktop",
+  "rename-desktop-file": "ipfs-desktop.desktop",
+  "rename-icon": "ipfs-desktop",
+  "separate-locales": false,
+  "finish-args": [
+    "--socket=x11",
+    "--socket=wayland",
+    "--share=ipc",
+    "--share=network",
+    "--socket=pulseaudio",
+    "--device=dri",
+    "--filesystem=host",
+    "--talk-name=org.freedesktop.portal.Background",
+    "--talk-name=org.freedesktop.Notification",
+    "--talk-name=org.kde.StatusNotifierWatcher",
+    "--env=FORCE_WAYLAND=0"
+  ],
+  "modules": [
+    {
+      "name": "ipfs-desktop",
+      "buildsystem": "simple",
+      "build-commands": [
+        "mkdir \"${FLATPAK_DEST}/ipfs-desktop-linux-x64\"",
+        "mv ./* \"${FLATPAK_DEST}/ipfs-desktop-linux-x64\""
+      ],
+      "sources": [
+        {
+          "type": "archive",
+          "url": "https://github.com/ipfs/ipfs-desktop/releases/download/v0.27.2/ipfs-desktop-0.27.2-linux-x64.tar.xz",
+          "sha256": "ceec156190696d10c05a14f3432f2e8e14f2eeb87017ffcaa846a1e5a7e5ab6e",
+          "x-checker-data": {
+            "type": "json",
+            "url": "https://api.github.com/repos/ipfs/ipfs-desktop/releases/latest",
+            "version-query": ".tag_name | sub(\"^v\"; \"\")",
+            "url-query": ".assets[] | select(.name==\"ipfs-desktop-\" + $version + \"-linux-x64.tar.xz\" | .browser_download_url"
+          },
+          "only-arches": [
+            "x86_64"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "resources",
+      "buildsystem": "simple",
+      "build-commands": [
+        "install -Dm0755 ipfs-desktop.sh \"${FLATPAK_DEST}/bin/ipfs-desktop\"",
+        "chmod +x ipfs-desktop-linux.AppImage",
+        "./ipfs-desktop-linux.AppImage --appimage-extract",
+        "install -Dm0644 squashfs-root/ipfs-desktop.desktop \"${FLATPAK_DEST}/share/applications/ipfs-desktop.desktop\"",
+        "desktop-file-edit --set-key=Exec --set-value=\"ipfs-desktop %U\" \"${FLATPAK_DEST}/share/applications/ipfs-desktop.desktop\"",
+        "desktop-file-edit --remove-key=X-AppImage-Version \"${FLATPAK_DEST}/share/applications/ipfs-desktop.desktop\"",
+        "for size in 16 32 48 64 128 256 512; do install -Dm0644 \"squashfs-root/usr/share/icons/hicolor/${size}x${size}/apps/ipfs-desktop.png\" \"${FLATPAK_DEST}/share/icons/hicolor/${size}x${size}/apps/ipfs-desktop.png\"; done"
+      ],
+      "sources": [
+        {
+          "type": "file",
+          "url": "https://github.com/ipfs/ipfs-desktop/releases/download/v0.27.2/ipfs-desktop-0.27.2-linux-x86_64.AppImage",
+          "sha256": "4360d923a28187a09d9e182931dce7a99a6b8d5a3f038ed10d2327e1c07b204c",
+          "dest-filename": "ipfs-desktop-linux.AppImage",
+          "x-checker-data": {
+            "type": "json",
+            "url": "https://api.github.com/repos/ipfs/ipfs-desktop/releases/latest",
+            "version-query": ".tag_name | sub(\"^v\"; \"\")",
+            "url-query": ".assets[] | select(.name==\"ipfs-desktop-\" + $version + \"-linux-x86_64.AppImage\" | .browser_download_url"
+          },
+          "only-arches": [
+            "x86_64"
+          ]
+        },
+        {
+          "type": "file",
+          "path": "ipfs-desktop.sh"
+        }
+      ]
+    }
+  ]
+}
